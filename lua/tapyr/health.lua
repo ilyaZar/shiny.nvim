@@ -1,6 +1,6 @@
-local M = {}
+local health = {}
 
-function M.check()
+function health.check()
   vim.health.start("tapyr.nvim")
 
   if vim.fn.has("nvim-0.10") == 1 then
@@ -18,13 +18,13 @@ function M.check()
   if vim.fn.executable("ss") == 1 then
     vim.health.ok("ss is available")
   else
-    vim.health.error("ss is required for listener discovery")
+    vim.health.error("ss is required to list local apps")
   end
 
   if vim.fn.isdirectory("/proc") == 1 then
     vim.health.ok("/proc is available")
   else
-    vim.health.error("/proc is required for process discovery")
+    vim.health.error("/proc is required to read app details")
   end
 
   if pcall(require, "overseer") then
@@ -34,4 +34,4 @@ function M.check()
   end
 end
 
-return M
+return health

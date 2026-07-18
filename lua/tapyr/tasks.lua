@@ -1,33 +1,33 @@
-local M = {}
+local tasks = {}
 
-local util = require("tapyr.util")
-local server_tasks = {}
+local messages = require("tapyr.messages")
+local app_tasks = {}
 
 local commands = {
   run = { "uv", "run", "shiny", "run", "app.py" },
   test = { "uv", "run", "pytest" },
 }
 
-local function load_overseer()
+local function get_overseer()
   local ok, overseer = pcall(require, "overseer")
   if not ok then
-    util.notify("overseer.nvim is required", vim.log.levels.ERROR)
+    messages.show("Overseer is required to run apps and tests", vim.log.levels.ERROR)
     return nil
   end
   return overseer
 end
 
-local function is_disposed(task)
+local function task_is_gone(task)
   return not task or task:is_disposed()
 end
 
-local function open_below(task)
+local function show_output(task)
   vim.defer_fn(function()
-    if is_disposed(task) or not task:get_bufnr() then
+    if task_is_gone(task) or not task:get_bufnr() then
       return
     end
 
-    local overseer = load_overseer()
+    local overseer = get_overseer()
     if not overseer then
       return
     end
@@ -36,8 +36,8 @@ local function open_below(task)
   end, 100)
 end
 
-local function new_server_task(root)
-  local overseer = load_overseer()
+local function new_app_task(root)
+  local overseer = get_overseer()
   if not overseer then
     return nil
   end
@@ -52,36 +52,36 @@ end
 
 ---@param name "run"|"test"
 ---@return string
-function M.command_text(name)
+function tasks.describe(name)
   return table.concat(commands[name], " ")
 end
 
 ---@param root string
-function M.start(root)
-  local task = new_server_task(root)
+function tasks.start(root)
+  local task = new_app_task(root)
   if not task then
     return
   end
 
-  server_tasks[root] = task
+  app_tasks[root] = task
   task:start()
-  open_below(task)
+  show_output(task)
 end
 
 ---@param root string
-function M.run(root)
-  local task = server_tasks[root]
-  if is_disposed(task) then
-    task = new_server_task(root)
+function tasks.run(root)
+  local task = app_tasks[root]
+  if task_is_gone(task) then
+    task = new_app_task(root)
     if not task then
       return
     end
-    server_tasks[root] = task
+    app_tasks[root] = task
   end
 
   local ok, constants = pcall(require, "overseer.constants")
   if not ok then
-    util.notify("overseer.nvim is required", vim.log.levels.ERROR)
+    messages.show("Overseer is required to run apps and tests", vim.log.levels.ERROR)
     return
   end
 
@@ -91,29 +91,29 @@ function M.run(root)
     task:restart(true)
   end
 
-  open_below(task)
+  show_output(task)
 end
 
 ---@param root string
-function M.rebuild(root)
-  local task = server_tasks[root]
-  if is_disposed(task) then
-    task = new_server_task(root)
+function tasks.restart(root)
+  local task = app_tasks[root]
+  if task_is_gone(task) then
+    task = new_app_task(root)
     if not task then
       return
     end
-    server_tasks[root] = task
+    app_tasks[root] = task
     task:start()
   else
     task:restart(true)
   end
 
-  open_below(task)
+  show_output(task)
 end
 
 ---@param root string
-function M.test(root)
-  local overseer = load_overseer()
+function tasks.test(root)
+  local overseer = get_overseer()
   if not overseer then
     return
   end
@@ -130,7 +130,7 @@ function M.test(root)
   })
 
   task:start()
-  open_below(task)
+  show_output(task)
 end
 
-return M
+return tasks

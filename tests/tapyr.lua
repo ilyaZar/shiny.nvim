@@ -1,4 +1,4 @@
-local function has_mapping(bufnr, desc)
+local function buffer_has_mapping(bufnr, desc)
   for _, mapping in ipairs(vim.api.nvim_buf_get_keymap(bufnr, "n")) do
     if mapping.desc == desc then
       return true
@@ -9,21 +9,21 @@ end
 
 assert(vim.fn.exists(":Tapyr") == 2, "Tapyr command is missing")
 
-local fixture = vim.fs.joinpath(vim.fn.getcwd(), "tests", "fixtures", "shiny-app", "app.py")
+local fixture = vim.fs.joinpath(vim.fn.getcwd(), "tests", "fixtures", "sample-project", "app.py")
 vim.cmd.edit(vim.fn.fnameescape(fixture))
 
 local app_buf = vim.api.nvim_get_current_buf()
-assert(has_mapping(app_buf, "Tapyr: manager"), "Shiny buffer mapping is missing")
+assert(buffer_has_mapping(app_buf, "Tapyr: panel"), "Shiny buffer mapping is missing")
 
 vim.cmd.Tapyr()
-assert(vim.bo.filetype == "tapyr", "manager filetype is missing")
+assert(vim.bo.filetype == "tapyr", "panel filetype is missing")
 
 local first_line = vim.api.nvim_buf_get_lines(0, 0, 1, false)[1]
-assert(first_line:find("[List]", 1, true), "List tab is missing")
+assert(first_line:find("[Apps]", 1, true), "Apps view is missing")
 
 vim.api.nvim_feedkeys(vim.keycode("<Tab>"), "x", false)
 local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-assert(lines[1]:find("[Build]", 1, true), "Build tab is missing")
+assert(lines[1]:find("[Project]", 1, true), "Project view is missing")
 
 local app_row
 for index, line in ipairs(lines) do
@@ -41,10 +41,10 @@ assert(vim.api.nvim_buf_get_name(0) == fixture, "app.py row did not open")
 vim.o.columns = 40
 vim.o.lines = 12
 vim.cmd.Tapyr()
-assert(vim.bo.filetype == "tapyr", "manager failed in a narrow editor")
+assert(vim.bo.filetype == "tapyr", "panel failed in a narrow editor")
 vim.api.nvim_feedkeys("q", "x", false)
 
 vim.cmd.edit(vim.fn.fnameescape(vim.fs.joinpath(vim.fn.getcwd(), "README.md")))
-assert(not has_mapping(0, "Tapyr: manager"), "non-Shiny buffer was mapped")
+assert(not buffer_has_mapping(0, "Tapyr: panel"), "non-Shiny buffer was mapped")
 
-print("tapyr smoke test passed")
+print("tapyr tests passed")

@@ -1,4 +1,4 @@
-*tapyr.txt*                       Shiny for Python workflow manager
+*tapyr.txt*                       Shiny for Python tools for Neovim
 
 ==============================================================================
 CONTENTS                                                      *tapyr-contents*
@@ -11,9 +11,9 @@ CONTENTS                                                      *tapyr-contents*
 ==============================================================================
 1. Introduction                                            *tapyr-introduction*
 
-Tapyr provides a compact local workflow for Shiny for Python applications. It
-detects projects from an app.py file that imports shiny, runs app and test tasks
-through overseer.nvim, and shows local listeners in a floating manager.
+Tapyr keeps the usual Shiny for Python loop inside Neovim. It detects projects
+from an app.py file that imports shiny, runs apps and tests through
+overseer.nvim, and shows local apps in a floating panel.
 
 Tapyr initializes automatically when installed. No configuration call is
 required.
@@ -30,23 +30,23 @@ required.
 3. Usage                                                         *tapyr-usage*
 
                                                             *:Tapyr*
-:Tapyr                  Open the Tapyr manager.
+:Tapyr                  Open the Tapyr panel.
 
 Tapyr defines these mappings only in buffers below a detected Shiny app.py:
 
 CTRL-B                  Run the application.
 CTRL-SHIFT-B            Restart the application task.
 CTRL-T                  Run the test suite.
-<Leader>tm              Open the Tapyr manager.
+<Leader>tm              Open the Tapyr panel.
 
-Manager mappings:
+Panel mappings:
 
 Tab / Shift-Tab         Cycle views.
 R                       Restart the selected application.
-K                       Terminate the selected process.
+K                       Stop the selected application.
 S                       Open the selected application URL.
-Enter                   Open a selected path in the Build view.
-q / Esc / C             Close the manager.
+Enter                   Open a selected file in the Project view.
+q / Esc / C             Close the panel.
 
 ==============================================================================
 4. Health                                                       *tapyr-health*

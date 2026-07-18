@@ -1,0 +1,390 @@
+local panel = {}
+
+local apps = require("tapyr.apps")
+local messages = require("tapyr.messages")
+local tasks = require("tapyr.tasks")
+local text = require("tapyr.text")
+
+local uv = vim.uv or vim.loop
+
+local views = {
+  { key = "apps", label = "Apps" },
+  { key = "project", label = "Project" },
+  { key = "help", label = "Help" },
+}
+
+local project_items = {
+  {
+    kind = "task",
+    name = "run app",
+    key = "Ctrl+b",
+    command = tasks.describe("run"),
+  },
+  {
+    kind = "task",
+    name = "restart app",
+    key = "Ctrl+Shift+b",
+    command = tasks.describe("run"),
+  },
+  {
+    kind = "task",
+    name = "test app",
+    key = "Ctrl+t",
+    command = tasks.describe("test"),
+  },
+  {
+    kind = "path",
+    name = "app",
+    path = "app.py",
+  },
+  {
+    kind = "path",
+    name = "project",
+    path = "pyproject.toml",
+  },
+}
+
+local function view_bar(active)
+  local parts = {}
+  for index, view in ipairs(views) do
+    local label = view.label
+    if index == active then
+      label = "[" .. label .. "]"
+    else
+      label = " " .. label .. " "
+    end
+    parts[#parts + 1] = label
+  end
+  return table.concat(parts, "  ")
+end
+
+local function footer()
+  return {
+    { " " },
+    { "Tab", "DiagnosticOk" },
+    { ":views  " },
+    { "[R]", "DiagnosticOk" },
+    { " restart  " },
+    { "[K]", "DiagnosticOk" },
+    { " stop  " },
+    { "[S]", "DiagnosticOk" },
+    { " open  " },
+    { "CR", "DiagnosticOk" },
+    { ":open file  " },
+    { "[C]", "DiagnosticOk" },
+    { " close " },
+  }
+end
+
+local function title(root)
+  return {
+    { " Tapyr ", "FloatTitle" },
+    { text.shorten(root or uv.cwd(), 52), "Comment" },
+    { " ", "FloatTitle" },
+  }
+end
+
+local function draw_apps(state)
+  local found_apps, note = apps.find()
+  state.apps = found_apps
+
+  local lines = {
+    view_bar(state.view),
+    "",
+    text.column("host", 16)
+      .. " "
+      .. text.column("port", 6)
+      .. " "
+      .. text.column("pid", 8)
+      .. " "
+      .. text.column("command", 32)
+      .. " project",
+    string.rep("-", 86),
+  }
+
+  state.items_by_line = {}
+
+  if vim.tbl_isempty(found_apps) then
+    lines[#lines + 1] = "No local Shiny apps found"
+    if note then
+      lines[#lines + 1] = note
+    end
+    lines[#lines + 1] = ""
+    lines[#lines + 1] = "Press Ctrl+b in a Shiny project to start one"
+    state.first_item = nil
+    return lines
+  end
+
+  for _, app in ipairs(found_apps) do
+    local line_number = #lines + 1
+    state.items_by_line[line_number] = {
+      kind = "app",
+      app = app,
+    }
+    lines[#lines + 1] = text.column(app.host, 16)
+      .. " "
+      .. text.column(app.port, 6)
+      .. " "
+      .. text.column(app.pid or "-", 8)
+      .. " "
+      .. text.column(app.command or "-", 32)
+      .. " "
+      .. text.shorten(app.project or "-", 38)
+    if not state.first_item then
+      state.first_item = line_number
+    end
+  end
+
+  return lines
+end
+
+local function project_path(item, root)
+  if item.path:sub(1, 1) == "/" then
+    return item.path
+  end
+  return vim.fs.joinpath(root, item.path)
+end
+
+local function draw_project(state)
+  local lines = {
+    view_bar(state.view),
+    "",
+    text.column("entry", 18) .. " " .. text.column("key", 14) .. " detail",
+    string.rep("-", 74),
+  }
+
+  state.items_by_line = {}
+  state.first_item = nil
+
+  for _, item in ipairs(project_items) do
+    if item.kind == "task" then
+      lines[#lines + 1] = text.column(item.name, 18)
+        .. " "
+        .. text.column(item.key, 14)
+        .. " "
+        .. item.command
+    elseif item.kind == "path" then
+      local line_number = #lines + 1
+      local path = project_path(item, state.root)
+      state.items_by_line[line_number] = {
+        kind = "path",
+        path = path,
+      }
+      lines[#lines + 1] = text.column(item.name, 18)
+        .. " "
+        .. text.column("Enter", 14)
+        .. " "
+        .. path
+      state.first_item = state.first_item or line_number
+    end
+  end
+
+  return lines
+end
+
+local function draw_help(state)
+  local found_apps, note = apps.find()
+  state.items_by_line = {}
+  state.first_item = nil
+
+  local lines = {
+    view_bar(state.view),
+    "",
+    "keys",
+    "  Tab       change view",
+    "  R/K/S     restart, stop, or open the selected app",
+    "  Enter     open a file from Project",
+    "  C/q/Esc   close",
+    "",
+    "project",
+    "  apps found: " .. #found_apps,
+    "  project: " .. state.root,
+    "",
+    "notes",
+    "  app details come from /proc",
+    "  restart uses the default command for this project",
+  }
+
+  if note then
+    lines[#lines + 1] = "  " .. note
+  end
+
+  return lines
+end
+
+local function current_item(state)
+  if not state.win or not vim.api.nvim_win_is_valid(state.win) then
+    return nil
+  end
+
+  local line_number = vim.api.nvim_win_get_cursor(state.win)[1]
+  return state.items_by_line and state.items_by_line[line_number] or nil
+end
+
+local function close(state)
+  if state.win and vim.api.nvim_win_is_valid(state.win) then
+    vim.api.nvim_win_close(state.win, true)
+  end
+  if state.buf and vim.api.nvim_buf_is_valid(state.buf) then
+    vim.api.nvim_buf_delete(state.buf, { force = true })
+  end
+end
+
+local function draw(state)
+  state.items_by_line = {}
+  state.first_item = nil
+
+  local view = views[state.view].key
+  local lines
+  if view == "apps" then
+    lines = draw_apps(state)
+  elseif view == "project" then
+    lines = draw_project(state)
+  else
+    lines = draw_help(state)
+  end
+
+  vim.api.nvim_set_option_value("modifiable", true, { buf = state.buf })
+  vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
+  vim.api.nvim_set_option_value("modifiable", false, { buf = state.buf })
+
+  if state.first_item then
+    pcall(vim.api.nvim_win_set_cursor, state.win, { state.first_item, 0 })
+  else
+    pcall(vim.api.nvim_win_set_cursor, state.win, { 1, 0 })
+  end
+end
+
+local function move_view(state, direction)
+  state.view = state.view + direction
+  if state.view > #views then
+    state.view = 1
+  elseif state.view < 1 then
+    state.view = #views
+  end
+  draw(state)
+end
+
+local function open_project_file(state)
+  local item = current_item(state)
+  if not item or item.kind ~= "path" then
+    return
+  end
+
+  local path = item.path
+  close(state)
+  vim.cmd.edit(vim.fn.fnameescape(path))
+end
+
+local function map(state, lhs, callback, desc)
+  vim.keymap.set("n", lhs, callback, {
+    buffer = state.buf,
+    desc = desc,
+    noremap = true,
+    silent = true,
+  })
+end
+
+---@param root string
+---@return table
+function panel.open(root)
+  local editor_w = vim.o.columns
+  local editor_h = vim.o.lines
+  local max_width = math.max(editor_w - 4, 1)
+  local max_height = math.max(editor_h - 4, 1)
+  local desired_width = math.max(78, math.min(110, math.floor(editor_w * 0.72)))
+  local desired_height = math.max(12, math.min(20, math.floor(editor_h * 0.45)))
+  local width = math.min(desired_width, max_width)
+  local height = math.min(desired_height, max_height)
+  local row = math.max(math.floor((editor_h - height) / 2), 0)
+  local col = math.max(math.floor((editor_w - width) / 2), 0)
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  local state = {
+    root = root,
+    buf = buf,
+    win = nil,
+    view = 1,
+    items_by_line = {},
+    apps = {},
+    first_item = nil,
+  }
+
+  vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
+  vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf })
+  vim.api.nvim_set_option_value("swapfile", false, { buf = buf })
+  vim.api.nvim_set_option_value("filetype", "tapyr", { buf = buf })
+
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    style = "minimal",
+    border = "single",
+    title = title(root),
+    title_pos = "center",
+    footer = footer(),
+    footer_pos = "center",
+  })
+  state.win = win
+
+  vim.api.nvim_set_option_value("cursorline", true, { win = win })
+  vim.api.nvim_set_option_value("wrap", false, { win = win })
+
+  draw(state)
+
+  map(state, "<Tab>", function()
+    move_view(state, 1)
+  end, "Tapyr: next view")
+  map(state, "<S-Tab>", function()
+    move_view(state, -1)
+  end, "Tapyr: previous view")
+  map(state, "<CR>", function()
+    open_project_file(state)
+  end, "Tapyr: open project file")
+  map(state, "R", function()
+    local item = current_item(state)
+    apps.restart(item and item.app, state.root)
+    vim.defer_fn(function()
+      if state.win and vim.api.nvim_win_is_valid(state.win) then
+        draw(state)
+      end
+    end, 600)
+  end, "Tapyr: restart selected app")
+  map(state, "K", function()
+    local item = current_item(state)
+    if not item or not item.app then
+      messages.show("Select an app first", vim.log.levels.WARN)
+      return
+    end
+    apps.stop(item.app.pid)
+    vim.defer_fn(function()
+      if state.win and vim.api.nvim_win_is_valid(state.win) then
+        draw(state)
+      end
+    end, 400)
+  end, "Tapyr: stop selected app")
+  map(state, "S", function()
+    local item = current_item(state)
+    if not item or not item.app then
+      messages.show("Select an app first", vim.log.levels.WARN)
+      return
+    end
+    apps.open_in_browser(item.app.url)
+  end, "Tapyr: open selected app")
+  map(state, "C", function()
+    close(state)
+  end, "Tapyr: close")
+  map(state, "q", function()
+    close(state)
+  end, "Tapyr: close")
+  map(state, "<Esc>", function()
+    close(state)
+  end, "Tapyr: close")
+
+  return state
+end
+
+return panel

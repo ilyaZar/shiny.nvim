@@ -1,8 +1,8 @@
 # tapyr.nvim
 
-`tapyr.nvim` provides a small Neovim workflow for local Shiny for Python apps.
-It discovers projects from an `app.py` import, runs app and test commands
-through Overseer, and lists local Shiny listeners in a floating manager.
+`tapyr.nvim` keeps the usual Shiny for Python loop inside Neovim. It finds
+projects from an `app.py` import, runs apps and tests through Overseer, and
+shows local apps in a small floating panel.
 
 ## Requirements
 
@@ -45,32 +45,32 @@ Open a file below a Shiny `app.py`. Tapyr adds these buffer-local mappings:
 - `Ctrl+b` runs the app
 - `Ctrl+Shift+b` restarts the app task
 - `Ctrl+t` runs the test suite
-- `<leader>tm` opens the manager
+- `<leader>tm` opens the panel
 
-`:Tapyr` opens the manager directly.
+`:Tapyr` opens the panel directly.
 
-Inside the manager:
+Inside the panel:
 
 - `Tab` and `Shift+Tab` cycle views
 - `R` restarts the selected app
-- `K` terminates the selected process
+- `K` stops the selected app
 - `S` opens the selected app
-- `Enter` opens paths from the Build view
-- `q`, `Esc`, or `C` closes the manager
+- `Enter` opens files from the Project view
+- `q`, `Esc`, or `C` closes the panel
 
 Run `:checkhealth tapyr` to verify external dependencies.
 
-## Current Scope
+## Limits
 
 Tapyr currently uses fixed `uv run shiny run app.py` and `uv run pytest`
 commands. Project detection expects an `app.py` that imports `shiny`.
 
-The listener view reports raw Shiny-related sockets. Shiny reload helper
-listeners may therefore appear beside the public app port.
+The Apps view lists each local port owned by a Shiny command. Reload mode can
+therefore show more than one port for the same app.
 
 ## Development
 
-Run the isolated headless smoke test:
+Run the headless tests:
 
 ```bash
 ./scripts/test

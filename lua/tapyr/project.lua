@@ -1,8 +1,8 @@
-local M = {}
+local project = {}
 
 local uv = vim.uv or vim.loop
 
-local function is_shiny_app(path)
+local function imports_shiny(path)
   if vim.fn.filereadable(path) ~= 1 then
     return false
   end
@@ -22,7 +22,7 @@ end
 
 ---@param bufnr? integer
 ---@return string?
-function M.root(bufnr)
+function project.find_root(bufnr)
   bufnr = bufnr or 0
   if not vim.api.nvim_buf_is_valid(bufnr) then
     return nil
@@ -36,9 +36,9 @@ function M.root(bufnr)
     type = "file",
   })[1]
 
-  if app and is_shiny_app(app) then
+  if app and imports_shiny(app) then
     return vim.fs.dirname(app)
   end
 end
 
-return M
+return project

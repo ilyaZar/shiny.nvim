@@ -1,17 +1,9 @@
-local M = {}
-
----@param message string
----@param level? integer
-function M.notify(message, level)
-  vim.notify(message, level or vim.log.levels.INFO, {
-    title = "Tapyr",
-  })
-end
+local text = {}
 
 ---@param value any
 ---@param width integer
 ---@return string
-function M.truncate(value, width)
+function text.shorten(value, width)
   value = tostring(value or "")
   if #value <= width then
     return value
@@ -25,9 +17,9 @@ end
 ---@param value any
 ---@param width integer
 ---@return string
-function M.pad(value, width)
-  value = M.truncate(value, width)
+function text.column(value, width)
+  value = text.shorten(value, width)
   return value .. string.rep(" ", math.max(width - #value, 0))
 end
 
-return M
+return text

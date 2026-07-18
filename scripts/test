@@ -2,6 +2,6 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-"${NVIM:-nvim}" --clean --headless -u tests/minimal_init.lua \
-  -c "lua dofile('tests/smoke.lua')" \
+"${NVIM:-nvim}" --clean --headless -u tests/init.lua \
+  -c "lua dofile('tests/tapyr.lua')" \
   -c "qa!"
