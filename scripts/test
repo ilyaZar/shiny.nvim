@@ -3,5 +3,5 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 "${NVIM:-nvim}" --clean --headless -u tests/init.lua \
-  -c "lua dofile('tests/tapyr.lua')" \
+  -c "lua dofile('tests/run.lua')" \
   -c "qa!"

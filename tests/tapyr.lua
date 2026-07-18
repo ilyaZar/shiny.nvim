@@ -7,6 +7,53 @@ local function buffer_has_mapping(bufnr, desc)
   return false
 end
 
+local apps = require("tapyr.apps")
+
+assert(
+  apps.is_public_listener({ "uv", "run", "shiny", "run", "app.py", "--reload" }, 8000),
+  "default reload app port was hidden"
+)
+assert(
+  not apps.is_public_listener({ "uv", "run", "shiny", "run", "app.py", "--reload" }, 37474),
+  "default reload redirect port was shown"
+)
+assert(
+  apps.is_public_listener(
+    { "python", "/tmp/venv/bin/shiny", "run", "app.py", "--reload", "--port", "8123" },
+    8123
+  ),
+  "explicit reload app port was hidden"
+)
+assert(
+  not apps.is_public_listener(
+    { "python", "/tmp/venv/bin/shiny", "run", "app.py", "--reload", "--port=8123" },
+    37474
+  ),
+  "explicit reload redirect port was shown"
+)
+assert(
+  apps.is_public_listener({ "uv", "run", "shiny", "run", "app.py" }, 8123),
+  "non-reload listener was hidden"
+)
+assert(
+  apps.is_public_listener({ "uv", "run", "shiny", "run", "app.py", "-r", "-p", "0" }, 49152),
+  "random reload app port was hidden"
+)
+assert(
+  apps.is_public_listener({ "uv", "run", "shiny", "run", "app.py", "-r", "-p0" }, 37474),
+  "random reload listener was hidden without enough information"
+)
+assert(not apps.is_public_listener({
+  "uv",
+  "run",
+  "shiny",
+  "run",
+  "app.py",
+  "-r",
+  "--port=0",
+  "--autoreload-port=37474",
+}, 37474), "known autoreload port was shown")
+
 assert(vim.fn.exists(":Tapyr") == 2, "Tapyr command is missing")
 
 local fixture = vim.fs.joinpath(vim.fn.getcwd(), "tests", "fixtures", "sample-project", "app.py")
@@ -46,5 +93,3 @@ vim.api.nvim_feedkeys("q", "x", false)
 
 vim.cmd.edit(vim.fn.fnameescape(vim.fs.joinpath(vim.fn.getcwd(), "README.md")))
 assert(not buffer_has_mapping(0, "Tapyr: panel"), "non-Shiny buffer was mapped")
-
-print("tapyr tests passed")

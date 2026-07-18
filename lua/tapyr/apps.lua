@@ -126,6 +126,65 @@ local function is_shiny_command(command, executable)
   return haystack:find("shiny", 1, true) ~= nil or haystack:find("app.py", 1, true) ~= nil
 end
 
+local function reload_ports(argv)
+  if not argv then
+    return nil, nil
+  end
+
+  local run_index
+  for index, argument in ipairs(argv) do
+    if vim.fs.basename(argument) == "shiny" and argv[index + 1] == "run" then
+      run_index = index + 1
+      break
+    end
+  end
+  if not run_index then
+    return nil, nil
+  end
+
+  local reload = false
+  local app_port = 8000
+  local autoreload_port = 0
+  local index = run_index + 1
+  while index <= #argv do
+    local argument = argv[index]
+    if argument == "--reload" or argument == "-r" then
+      reload = true
+    elseif argument == "--port" or argument == "-p" then
+      app_port = tonumber(argv[index + 1]) or app_port
+      index = index + 1
+    elseif argument == "--autoreload-port" then
+      autoreload_port = tonumber(argv[index + 1]) or autoreload_port
+      index = index + 1
+    else
+      app_port = tonumber(argument:match("^%-%-port=(%d+)$"))
+        or tonumber(argument:match("^%-p(%d+)$"))
+        or app_port
+      autoreload_port = tonumber(argument:match("^%-%-autoreload%-port=(%d+)$")) or autoreload_port
+    end
+    index = index + 1
+  end
+
+  if not reload then
+    return nil, nil
+  end
+  return app_port, autoreload_port
+end
+
+---@param argv? string[]
+---@param port integer
+---@return boolean
+function apps.is_public_listener(argv, port)
+  local app_port, autoreload_port = reload_ports(argv)
+  if not app_port then
+    return true
+  end
+  if app_port ~= 0 then
+    return port == app_port
+  end
+  return autoreload_port == 0 or port ~= autoreload_port
+end
+
 local function listener_pids(line)
   local pids = {}
   local seen = {}
@@ -203,7 +262,7 @@ function apps.find()
           tostring(pid),
         }, ":")
 
-        if not seen[key] then
+        if not seen[key] and apps.is_public_listener(argv, port) then
           seen[key] = true
           found_apps[#found_apps + 1] = app
         end

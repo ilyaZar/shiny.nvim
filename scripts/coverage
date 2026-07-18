@@ -1,0 +1,35 @@
+#!/bin/bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+command -v luacov >/dev/null 2>&1 || {
+  echo "luacov is required" >&2
+  exit 1
+}
+
+mkdir -p coverage
+rm -f coverage/luacov.stats.out coverage/lcov.info
+
+"${NVIM:-nvim}" --clean --headless \
+  --cmd "lua require('luacov')" \
+  -u tests/init.lua \
+  -c "lua dofile('tests/run.lua')" \
+  -c "lua require('luacov.runner').shutdown()" \
+  -c "qa!"
+
+luacov -c .luacov -r lcov
+test -s coverage/lcov.info
+
+awk -v minimum="${COVERAGE_MINIMUM:-70}" '
+  /^LH:/ { hit += substr($0, 4) }
+  /^LF:/ { total += substr($0, 4) }
+  END {
+    coverage = total == 0 ? 0 : hit * 100 / total
+    printf "line coverage: %.2f%% (%d/%d), minimum: %.2f%%\n",
+      coverage, hit, total, minimum
+    if (coverage + 0.0001 < minimum) {
+      exit 1
+    }
+  }
+' coverage/lcov.info

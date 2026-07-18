@@ -1,0 +1,13 @@
+return {
+  statsfile = "coverage/luacov.stats.out",
+  reportfile = "coverage/lcov.info",
+  include = {
+    "lua/tapyr/",
+    "plugin/tapyr$",
+  },
+  modules = {
+    ["plugin.tapyr"] = "plugin/tapyr.lua",
+    ["tapyr"] = "lua/tapyr/init.lua",
+    ["tapyr.*"] = "lua",
+  },
+}
