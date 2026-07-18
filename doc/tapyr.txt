@@ -1,0 +1,61 @@
+*tapyr.txt*                       Shiny for Python workflow manager
+
+==============================================================================
+CONTENTS                                                      *tapyr-contents*
+
+1. Introduction                                             |tapyr-introduction|
+2. Requirements                                             |tapyr-requirements|
+3. Usage                                                     |tapyr-usage|
+4. Health                                                    |tapyr-health|
+
+==============================================================================
+1. Introduction                                            *tapyr-introduction*
+
+Tapyr provides a compact local workflow for Shiny for Python applications. It
+detects projects from an app.py file that imports shiny, runs app and test tasks
+through overseer.nvim, and shows local listeners in a floating manager.
+
+Tapyr initializes automatically when installed. No configuration call is
+required.
+
+==============================================================================
+2. Requirements                                            *tapyr-requirements*
+
+- Neovim 0.10 or newer
+- Linux with /proc and ss
+- overseer.nvim
+- uv and Shiny for Python in the application project
+
+==============================================================================
+3. Usage                                                         *tapyr-usage*
+
+                                                            *:Tapyr*
+:Tapyr                  Open the Tapyr manager.
+
+Tapyr defines these mappings only in buffers below a detected Shiny app.py:
+
+CTRL-B                  Run the application.
+CTRL-SHIFT-B            Restart the application task.
+CTRL-T                  Run the test suite.
+<Leader>tm              Open the Tapyr manager.
+
+Manager mappings:
+
+Tab / Shift-Tab         Cycle views.
+R                       Restart the selected application.
+K                       Terminate the selected process.
+S                       Open the selected application URL.
+Enter                   Open a selected path in the Build view.
+q / Esc / C             Close the manager.
+
+==============================================================================
+4. Health                                                       *tapyr-health*
+
+Run:
+>
+  :checkhealth tapyr
+<
+The health check reports Neovim compatibility and the availability of uv, ss,
+/proc, and overseer.nvim.
+
+vim:tw=78:ts=8:noet:ft=help:norl:
