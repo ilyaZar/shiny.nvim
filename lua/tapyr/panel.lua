@@ -17,19 +17,19 @@ local project_items = {
   {
     kind = "task",
     name = "run app",
-    key = "Ctrl+b",
+    mapping = "run",
     command = tasks.describe("run"),
   },
   {
     kind = "task",
     name = "restart app",
-    key = "Ctrl+Shift+b",
+    mapping = "restart",
     command = tasks.describe("run"),
   },
   {
     kind = "task",
     name = "test app",
-    key = "Ctrl+t",
+    mapping = "test",
     command = tasks.describe("test"),
   },
   {
@@ -43,6 +43,24 @@ local project_items = {
     path = "pyproject.toml",
   },
 }
+
+local function mapping_label(mapping)
+  if not mapping then
+    return "-"
+  end
+
+  local key = mapping:match("^<C%-S%-(.)>$")
+  if key then
+    return "Ctrl+Shift+" .. key
+  end
+
+  key = mapping:match("^<C%-(.)>$")
+  if key then
+    return "Ctrl+" .. key
+  end
+
+  return mapping
+end
 
 local function view_bar(active)
   local parts = {}
@@ -153,6 +171,7 @@ local function draw_apps(state)
 end
 
 local function draw_project(state)
+  local mappings = require("tapyr").config.mappings
   local lines = {
     view_bar(state.view),
     "",
@@ -167,7 +186,7 @@ local function draw_project(state)
     if item.kind == "task" then
       lines[#lines + 1] = text.column(item.name, 18)
         .. " "
-        .. text.column(item.key, 14)
+        .. text.column(mapping_label(mappings[item.mapping]), 14)
         .. " "
         .. item.command
     elseif item.kind == "path" then

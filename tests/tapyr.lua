@@ -151,6 +151,8 @@ assert(opened_url == "http://127.0.0.1:8000", "selected app URL was not opened")
 vim.api.nvim_feedkeys(vim.keycode("<Tab>"), "x", false)
 local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 assert(lines[1]:find("[Project]", 1, true), "Project view is missing")
+assert(lines[5]:find("Ctrl+b", 1, true), "Project view did not show the default run mapping")
+assert(lines[6]:find("Ctrl+Shift+b", 1, true), "Project view did not show the default restart mapping")
 label, highlight = active_tab(0)
 assert(label == "[Project]", "Project tab is not highlighted")
 assert(highlight == "DiagnosticWarn", "Project tab highlight changed")
@@ -178,6 +180,7 @@ require("tapyr").setup({
   mappings = {
     run = "<leader>tb",
     panel = false,
+    test = false,
   },
 })
 local custom_buffer = vim.fs.joinpath(
@@ -191,6 +194,17 @@ vim.cmd.edit(vim.fn.fnameescape(custom_buffer))
 assert(buffer_mapping(0, "Tapyr: run app").lhs == "\\tb", "custom run mapping was not used")
 assert(buffer_mapping(0, "Tapyr: restart app").lhs == "<C-S-B>", "default restart mapping was not kept")
 assert(not buffer_has_mapping(0, "Tapyr: panel"), "disabled panel mapping was added")
+assert(not buffer_has_mapping(0, "Tapyr: test"), "disabled test mapping was added")
+
+require("tapyr").open(fixture_root)
+vim.api.nvim_feedkeys(vim.keycode("<Tab>"), "x", false)
+local custom_project_lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+assert(
+  custom_project_lines[5]:find("<leader>tb", 1, true),
+  "Project view did not show the custom run mapping"
+)
+assert(custom_project_lines[7]:find("-", 1, true), "Project view did not show the disabled test mapping")
+vim.api.nvim_feedkeys("q", "x", false)
 
 vim.cmd.edit(vim.fn.fnameescape(vim.fs.joinpath(vim.fn.getcwd(), "README.md")))
 assert(not buffer_has_mapping(0, "Tapyr: panel"), "non-Shiny buffer was mapped")
