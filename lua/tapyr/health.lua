@@ -5,10 +5,10 @@ function health.check()
 
   vim.health.start("tapyr.nvim")
 
-  if vim.fn.has("nvim-0.10") == 1 then
-    vim.health.ok("Neovim 0.10 or newer")
+  if vim.fn.has("nvim-0.11") == 1 then
+    vim.health.ok("Neovim 0.11 or newer")
   else
-    vim.health.error("Neovim 0.10 or newer is required")
+    vim.health.error("Neovim 0.11 or newer is required")
   end
 
   for _, name in ipairs({ "run", "test" }) do
