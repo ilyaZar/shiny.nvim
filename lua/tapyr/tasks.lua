@@ -23,10 +23,6 @@ local function get_overseer()
   return overseer
 end
 
-local function task_is_gone(task)
-  return not task or task:is_disposed()
-end
-
 local function show_task(task)
   local overseer = get_overseer()
   if not overseer then
@@ -90,6 +86,17 @@ local function new_app_task(root)
   })
 end
 
+local function ensure_app_task(root)
+  local task = app_tasks[root]
+  local created = not task or task:is_disposed()
+  if created then
+    task = new_app_task(root)
+    app_tasks[root] = task
+  end
+
+  return task, created
+end
+
 ---@param name "run"|"test"
 ---@return string
 function tasks.describe(name)
@@ -99,13 +106,9 @@ end
 
 ---@param root string
 function tasks.run(root)
-  local task = app_tasks[root]
-  if task_is_gone(task) then
-    task = new_app_task(root)
-    if not task then
-      return
-    end
-    app_tasks[root] = task
+  local task = ensure_app_task(root)
+  if not task then
+    return
   end
 
   local constants = require("overseer.constants")
@@ -122,13 +125,12 @@ end
 ---@param root string
 ---@param show_task_list? boolean
 function tasks.restart(root, show_task_list)
-  local task = app_tasks[root]
-  if task_is_gone(task) then
-    task = new_app_task(root)
-    if not task then
-      return
-    end
-    app_tasks[root] = task
+  local task, created = ensure_app_task(root)
+  if not task then
+    return
+  end
+
+  if created then
     task:start()
   else
     task:restart(true)

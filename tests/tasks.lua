@@ -87,6 +87,12 @@ run_task.status = status.RUNNING
 tasks.run("/tmp/run")
 assert(run_task.restarts == 1, "running task was restarted")
 
+run_task.disposed = true
+tasks.run("/tmp/run")
+local replacement_task = created[#created]
+assert(replacement_task ~= run_task, "disposed task was retained")
+assert(replacement_task.starts == 1, "replacement task was not started")
+
 local opened_before_restart = #opened
 tasks.restart("/tmp/restart", false)
 local restart_task = created[#created]
