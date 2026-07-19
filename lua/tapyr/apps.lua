@@ -429,16 +429,7 @@ end
 
 ---@param url string
 function apps.open_in_browser(url)
-  if vim.ui and vim.ui.open then
-    vim.ui.open(url)
-    return
-  end
-
-  if vim.fn.executable("xdg-open") == 1 then
-    vim.fn.jobstart({ "xdg-open", url }, { detach = true })
-  else
-    messages.show("No browser command is available for " .. url, vim.log.levels.WARN)
-  end
+  vim.ui.open(url)
 end
 
 return apps

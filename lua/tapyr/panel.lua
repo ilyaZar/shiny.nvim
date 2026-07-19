@@ -5,7 +5,6 @@ local messages = require("tapyr.messages")
 local tasks = require("tapyr.tasks")
 local text = require("tapyr.text")
 
-local uv = vim.uv or vim.loop
 local highlight_namespace = vim.api.nvim_create_namespace("tapyr.panel")
 
 local views = {
@@ -78,7 +77,7 @@ local function footer()
 end
 
 local function title(root)
-  local project = vim.fs.basename(root or uv.cwd())
+  local project = vim.fs.basename(root or vim.uv.cwd())
   return {
     { " Tapyr ", "FloatTitle" },
     { text.shorten(project, 52), "Comment" },

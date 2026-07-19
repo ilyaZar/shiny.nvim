@@ -119,6 +119,16 @@ local header_marks = vim.api.nvim_buf_get_extmarks(0, namespace, { 2, 0 }, { 2, 
 })
 assert(header_marks[1][4].hl_group == "Bold", "Apps column headings are not bold")
 
+vim.api.nvim_feedkeys(vim.keycode("<S-Tab>"), "x", false)
+local help_lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+assert(help_lines[1]:find("[Help]", 1, true), "Help view did not wrap backward from Apps")
+label, highlight = active_tab(0)
+assert(label == "[Help]", "Help tab is not highlighted")
+assert(highlight == "DiagnosticWarn", "Help tab highlight changed")
+
+vim.api.nvim_feedkeys(vim.keycode("<Tab>"), "x", false)
+assert(active_tab(0) == "[Apps]", "Apps view did not wrap forward from Help")
+
 vim.api.nvim_feedkeys(vim.keycode("<Tab>"), "x", false)
 local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 assert(lines[1]:find("[Project]", 1, true), "Project view is missing")

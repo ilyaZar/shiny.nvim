@@ -2,7 +2,6 @@ local messages = require("tapyr.messages")
 local tasks = require("tapyr.tasks")
 
 local original_constants = package.loaded["overseer.constants"]
-local original_constants_preload = package.preload["overseer.constants"]
 local original_executable = vim.fn.executable
 local original_exepath = vim.fn.exepath
 local original_overseer = package.loaded.overseer
@@ -25,10 +24,6 @@ local function new_task(spec)
     status = status.PENDING,
     spec = spec,
   }
-
-  function task:get_bufnr()
-    return nil
-  end
 
   function task:is_disposed()
     return self.disposed
@@ -148,16 +143,6 @@ assert(
 vim.fn.exepath = function(command)
   return "/usr/bin/" .. command
 end
-package.loaded["overseer.constants"] = nil
-package.preload["overseer.constants"] = function()
-  error("overseer constants unavailable")
-end
-tasks.run("/tmp/missing-overseer-constants")
-assert(
-  messages_seen[#messages_seen] == "Overseer is required to run apps and tests",
-  "missing Overseer constants error was not shown"
-)
-
 package.loaded.overseer = nil
 package.preload.overseer = function()
   error("overseer unavailable")
@@ -174,5 +159,4 @@ vim.fn.executable = original_executable
 vim.fn.exepath = original_exepath
 package.loaded.overseer = original_overseer
 package.loaded["overseer.constants"] = original_constants
-package.preload["overseer.constants"] = original_constants_preload
 package.preload.overseer = original_preload

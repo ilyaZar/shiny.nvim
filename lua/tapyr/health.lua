@@ -1,7 +1,7 @@
 local health = {}
 
 function health.check()
-  local root = (vim.uv or vim.loop).cwd()
+  local root = vim.uv.cwd()
 
   vim.health.start("tapyr.nvim")
 

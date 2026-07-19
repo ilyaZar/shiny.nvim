@@ -3,7 +3,6 @@ local messages = require("tapyr.messages")
 local tasks = require("tapyr.tasks")
 
 local original_defer_fn = vim.defer_fn
-local original_executable = vim.fn.executable
 local original_inspect = apps.inspect
 local original_jobstart = vim.fn.jobstart
 local original_open = vim.ui.open
@@ -171,32 +170,11 @@ end
 apps.open_in_browser("http://127.0.0.1:8000")
 assert(opened_url == "http://127.0.0.1:8000", "vim.ui.open was not used")
 
-vim.ui.open = nil
-vim.fn.executable = function(command)
-  return command == "xdg-open" and 1 or 0
-end
-vim.fn.jobstart = function(command)
-  opened_url = command[2]
-  return 1
-end
-apps.open_in_browser("http://127.0.0.1:8001")
-assert(opened_url == "http://127.0.0.1:8001", "xdg-open fallback was not used")
-
-vim.fn.executable = function()
-  return 0
-end
-apps.open_in_browser("http://127.0.0.1:8002")
-assert(
-  messages_seen[#messages_seen]:find("No browser command", 1, true),
-  "missing browser warning was not shown"
-)
-
 apps.stop = original_stop
 apps.inspect = original_inspect
 messages.show = original_show
 tasks.start = original_start
 vim.defer_fn = original_defer_fn
-vim.fn.executable = original_executable
 vim.fn.jobstart = original_jobstart
 vim.system = original_system
 vim.ui.open = original_open

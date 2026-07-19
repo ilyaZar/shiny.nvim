@@ -123,11 +123,7 @@ function tasks.run(root)
     app_tasks[root] = task
   end
 
-  local ok, constants = pcall(require, "overseer.constants")
-  if not ok then
-    messages.show("Overseer is required to run apps and tests", vim.log.levels.ERROR)
-    return
-  end
+  local constants = require("overseer.constants")
 
   if task.status == constants.STATUS.PENDING then
     task:start()
