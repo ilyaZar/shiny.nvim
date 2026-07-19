@@ -229,6 +229,15 @@ local function current_item(state)
   return state.items_by_line and state.items_by_line[line_number] or nil
 end
 
+local function selected_app(state)
+  local item = current_item(state)
+  if not item or not item.app then
+    messages.show("Select an app first", vim.log.levels.WARN)
+    return nil
+  end
+  return item.app
+end
+
 local function close(state)
   if state.win and vim.api.nvim_win_is_valid(state.win) then
     vim.api.nvim_win_close(state.win, true)
@@ -412,34 +421,26 @@ function panel.open(root)
     draw(state)
   end, "Tapyr: refresh")
   map(state, "R", function()
-    local item = current_item(state)
-    local app = item and item.app
-    if apps.restart(app, state.root) then
+    local app = selected_app(state)
+    if app and apps.restart(app, state.root) then
       refresh_until(state, function(found)
         return not has_app(found, app) and has_replacement(found, app)
       end, 12)
     end
   end, "Tapyr: restart selected app")
   map(state, "x", function()
-    local item = current_item(state)
-    if not item or not item.app then
-      messages.show("Select an app first", vim.log.levels.WARN)
-      return
-    end
-    local app = item.app
-    if apps.stop(app) then
+    local app = selected_app(state)
+    if app and apps.stop(app) then
       refresh_until(state, function(found)
         return not has_app(found, app)
       end, 12)
     end
   end, "Tapyr: stop selected app")
   map(state, "o", function()
-    local item = current_item(state)
-    if not item or not item.app then
-      messages.show("Select an app first", vim.log.levels.WARN)
-      return
+    local app = selected_app(state)
+    if app then
+      apps.open_in_browser(app.url)
     end
-    apps.open_in_browser(item.app.url)
   end, "Tapyr: open selected app")
   map(state, "q", function()
     close(state)

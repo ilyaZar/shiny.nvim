@@ -21,7 +21,10 @@ local function active_tab(bufnr)
 end
 
 local apps = require("tapyr.apps")
+local messages = require("tapyr.messages")
 local original_find = apps.find
+local original_open_in_browser = apps.open_in_browser
+local original_show = messages.show
 
 assert(
   apps.is_public_listener({ "uv", "run", "shiny", "run", "app.py", "--reload" }, 8000),
@@ -129,6 +132,22 @@ assert(highlight == "DiagnosticWarn", "Help tab highlight changed")
 vim.api.nvim_feedkeys(vim.keycode("<Tab>"), "x", false)
 assert(active_tab(0) == "[Apps]", "Apps view did not wrap forward from Help")
 
+local warning
+messages.show = function(message)
+  warning = message
+end
+vim.api.nvim_win_set_cursor(0, { 1, 0 })
+vim.api.nvim_feedkeys("x", "x", false)
+assert(warning == "Select an app first", "missing app selection was not reported")
+
+local opened_url
+apps.open_in_browser = function(url)
+  opened_url = url
+end
+vim.api.nvim_win_set_cursor(0, { 5, 0 })
+vim.api.nvim_feedkeys("o", "x", false)
+assert(opened_url == "http://127.0.0.1:8000", "selected app URL was not opened")
+
 vim.api.nvim_feedkeys(vim.keycode("<Tab>"), "x", false)
 local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 assert(lines[1]:find("[Project]", 1, true), "Project view is missing")
@@ -177,3 +196,5 @@ vim.cmd.edit(vim.fn.fnameescape(vim.fs.joinpath(vim.fn.getcwd(), "README.md")))
 assert(not buffer_has_mapping(0, "Tapyr: panel"), "non-Shiny buffer was mapped")
 
 apps.find = original_find
+apps.open_in_browser = original_open_in_browser
+messages.show = original_show
