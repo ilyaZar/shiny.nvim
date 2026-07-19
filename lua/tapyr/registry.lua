@@ -130,4 +130,17 @@ function registry.load(root, current_app, global_path)
   return definitions, notes
 end
 
+---@param app TapyrAppDefinition
+---@param global_path? string
+---@return TapyrAppDefinition
+function registry.resolve(app, global_path)
+  local definitions = registry.load(app.root, app, global_path)
+  for _, definition in ipairs(definitions) do
+    if definition.id == app.id then
+      return definition
+    end
+  end
+  return app
+end
+
 return registry

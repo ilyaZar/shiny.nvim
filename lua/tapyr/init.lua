@@ -38,6 +38,11 @@ local function map(bufnr, lhs, callback, desc)
   })
 end
 
+local function find_app(bufnr)
+  local app = require("tapyr.project").find(bufnr)
+  return app and require("tapyr.registry").resolve(app) or nil
+end
+
 ---@param options? TapyrOptions
 function tapyr.setup(options)
   tapyr.config = vim.tbl_deep_extend("force", vim.deepcopy(defaults), options or {})
@@ -51,11 +56,11 @@ function tapyr.attach(bufnr)
   end
 
   if vim.b[bufnr].tapyr_attached then
-    active_app = require("tapyr.project").find(bufnr) or active_app
+    active_app = find_app(bufnr) or active_app
     return
   end
 
-  local app = require("tapyr.project").find(bufnr)
+  local app = find_app(bufnr)
   if not app then
     return
   end
@@ -82,7 +87,7 @@ end
 
 ---@param app? TapyrAppDefinition
 function tapyr.open(app)
-  app = app or require("tapyr.project").find(0) or active_app
+  app = app or find_app(0) or active_app
   local root = app and app.root or vim.uv.cwd()
   root = require("tapyr.registry").context(root)
 

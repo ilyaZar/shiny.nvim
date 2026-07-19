@@ -42,6 +42,10 @@ assert(definitions[2].name == "global app", "global app order changed")
 assert(definitions[2].port == 8123, "configured port was lost")
 assert(definitions[2].entrypoint == vim.fs.joinpath(global_app, "app.py"), "entrypoint changed")
 
+local resolved = registry.resolve(require("tapyr.project").new(global_app), global_manifest)
+assert(resolved.name == "global app", "registry name was not applied to a detected app")
+assert(resolved.port == 8123, "registry port was not applied to a detected app")
+
 local current = require("tapyr.project").new(vim.fs.joinpath(root, "current"))
 definitions = registry.load(local_app, current, global_manifest)
 assert(#definitions == 3, "current app was not included")
