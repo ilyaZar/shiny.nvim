@@ -1,39 +1,45 @@
-<h1 align="center">tapyr.nvim</h1>
+# shiny.nvim
 
-<p align="center">
-  <a href="https://github.com/ilyaZar/tapyr.nvim/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/ilyaZar/tapyr.nvim/ci.yml?branch=main&style=flat-square&logo=github&logoColor=white&label=CI&labelColor=2a7e3b&color=1b5e2a"></a>
-  <a href="https://codecov.io/gh/ilyaZar/tapyr.nvim"><img src="https://img.shields.io/codecov/c/github/ilyaZar/tapyr.nvim/main?style=flat-square&logo=codecov&logoColor=white&labelColor=6b3fa0&color=4b2d73"></a>
-  <a href="https://github.com/ilyaZar/tapyr.nvim/releases"><img src="https://img.shields.io/github/v/release/ilyaZar/tapyr.nvim?style=flat-square&label=version&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xIDcuNzc1VjIuNzVDMSAxLjc4NCAxLjc4NCAxIDIuNzUgMWg1LjAyNWMuNDY0IDAgLjkxLjE4NCAxLjIzOC41MTNsNi4yNSA2LjI1YTEuNzUgMS43NSAwIDAgMSAwIDIuNDc0bC01LjAyNiA1LjAyNmExLjc1IDEuNzUgMCAwIDEtMi40NzQgMGwtNi4yNS02LjI1QTEuNzUyIDEuNzUyIDAgMCAxIDEgNy43NzVabTEuNSAwYzAgLjA2Ni4wMjYuMTMuMDczLjE3N2w2LjI1IDYuMjVhLjI1LjI1IDAgMCAwIC4zNTQgMGw1LjAyNS01LjAyNWEuMjUuMjUgMCAwIDAgMC0uMzU0bC02LjI1LTYuMjVhLjI1LjI1IDAgMCAwLS4xNzctLjA3M0gyLjc1YS4yNS4yNSAwIDAgMC0uMjUuMjVaTTYgNWExIDEgMCAxIDEgMCAyIDEgMSAwIDAgMSAwLTJaIi8+PC9zdmc+&labelColor=4a999d&color=346c6e"></a>
-  <a href="https://neovim.io"><img src="https://img.shields.io/badge/Neovim-0.11+-3C92D2?style=flat-square&logo=neovim&logoColor=white&labelColor=57A143"></a>
-  <a href="https://www.lua.org"><img src="https://img.shields.io/badge/Lua-LuaJIT-343476?style=flat-square&logo=lua&logoColor=white&labelColor=4c4c9d"></a>
-  <a href="https://github.com/ilyaZar/tapyr.nvim/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ilyaZar/tapyr.nvim?style=flat-square&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik04Ljc1Ljc1VjJoLjk4NWMuMzA0IDAgLjYwMy4wOC44NjcuMjMxbDEuMjkuNzM2Yy4wMzguMDIyLjA4LjAzMy4xMjQuMDMzaDIuMjM0YS43NS43NSAwIDAgMSAwIDEuNWgtLjQyN2wyLjExMSA0LjY5MmEuNzUuNzUgMCAwIDEtLjE1NC44MzhsLS41My0uNTMuNTI5LjUzMS0uMDAxLjAwMi0uMDAyLjAwMi0uMDA2LjAwNi0uMDA2LjAwNS0uMDEuMDEtLjA0NS4wNGMtLjIxLjE3Ni0uNDQxLjMyNy0uNjg2LjQ1QzE0LjU1NiAxMC43OCAxMy44OCAxMSAxMyAxMWE0LjQ5OCA0LjQ5OCAwIDAgMS0yLjAyMy0uNDU0IDMuNTQ0IDMuNTQ0IDAgMCAxLS42ODYtLjQ1bC0uMDQ1LS4wNC0uMDE2LS4wMTUtLjAwNi0uMDA2LS4wMDQtLjAwNHYtLjAwMWEuNzUuNzUgMCAwIDEtLjE1NC0uODM4TDEyLjE3OCA0LjVoLS4xNjJjLS4zMDUgMC0uNjA0LS4wNzktLjg2OC0uMjMxbC0xLjI5LS43MzZhLjI0NS4yNDUgMCAwIDAtLjEyNC0uMDMzSDguNzVWMTNoMi41YS43NS43NSAwIDAgMSAwIDEuNWgtNi41YS43NS43NSAwIDAgMSAwLTEuNWgyLjVWMy41aC0uOTg0YS4yNDUuMjQ1IDAgMCAwLS4xMjQuMDMzbC0xLjI4OS43MzdjLS4yNjUuMTUtLjU2NC4yMy0uODY5LjIzaC0uMTYybDIuMTEyIDQuNjkyYS43NS43NSAwIDAgMS0uMTU0LjgzOGwtLjUzLS41My41MjkuNTMxLS4wMDEuMDAyLS4wMDIuMDAyLS4wMDYuMDA2LS4wMTYuMDE1LS4wNDUuMDRjLS4yMS4xNzYtLjQ0MS4zMjctLjY4Ni40NUM0LjU1NiAxMC43OCAzLjg4IDExIDMgMTFhNC40OTggNC40OTggMCAwIDEtMi4wMjMtLjQ1NCAzLjU0NCAzLjU0NCAwIDAgMS0uNjg2LS40NWwtLjA0NS0uMDQtLjAxNi0uMDE1LS4wMDYtLjAwNi0uMDA0LS4wMDR2LS4wMDFhLjc1Ljc1IDAgMCAxLS4xNTQtLjgzOEwyLjE3OCA0LjVIMS43NWEuNzUuNzUgMCAwIDEgMC0xLjVoMi4yMzRhLjI0OS4yNDkgMCAwIDAgLjEyNS0uMDMzbDEuMjg4LS43MzdjLjI2NS0uMTUuNTY0LS4yMy44NjktLjIzaC45ODRWLjc1YS43NS43NSAwIDAgMSAxLjUgMFptMi45NDUgOC40NzdjLjI4NS4xMzUuNzE4LjI3MyAxLjMwNS4yNzNzMS4wMi0uMTM4IDEuMzA1LS4yNzNMMTMgNi4zMjdabS0xMCAwYy4yODUuMTM1LjcxOC4yNzMgMS4zMDUuMjczczEuMDItLjEzOCAxLjMwNS0uMjczTDMgNi4zMjdaIi8+PC9zdmc+&labelColor=629944&color=446a30"></a>
-</p>
+`shiny.nvim` is a Neovim workflow for Shiny for Python applications and
+golem-based R Shiny packages. It detects either project type, runs applications
+and tests through Overseer, assigns managed ports, and presents their lifecycle
+in one panel.
 
-<p align="center">
-Minimal Neovim workflow for Shiny for Python apps.
-</p>
+The panel also contains Golex: a scratch-project manager for creating and
+opening disposable golem applications across persistent shelf directories.
 
-The `tapyr.nvim` plugin provides several QoL enhancements that help
-[Shiny for Python](https://shiny.posit.co/py/) development inside Neovim. It
-finds projects from an `app.py` import, runs apps and tests through Overseer,
-and shows local apps in a small floating panel.
+The GitHub repository retains the `tapyr.nvim` name until a separate remote
+rename. The plugin itself uses only the canonical `shiny.nvim` modules,
+commands, help tags, filetypes, and data paths.
 
-The panel can also track several apps from one workspace or from unrelated
-directories. Apps started through Tapyr receive their own Overseer task, output
-buffer, and local port.
+## Supported projects
 
-It works with regular Shiny projects, including Appsilon's
-[Tapyr template](https://www.appsilon.com/rhinoverse/tapyr). See the Tapyr
-[documentation](https://appsilon.github.io/tapyr-docs/) and
-[template repository](https://github.com/Appsilon/tapyr-template).
+- Shiny for Python projects with an `app.py` that imports `shiny`
+- golem packages with `DESCRIPTION` and `inst/golem-config.yml`
+
+Ordinary R Shiny projects that are not golem packages are not detected.
 
 ## Requirements
 
+Shared:
+
 - Neovim 0.11 or newer
-- Linux with `/proc` and `ss`
-- [`overseer.nvim`](https://github.com/stevearc/overseer.nvim)
-- A prepared project environment with `shiny` and `pytest` in `.venv/bin` or
-  Neovim's `PATH`, or `uv` for first-run preparation from a `uv.lock`
+- [overseer.nvim](https://github.com/stevearc/overseer.nvim)
+
+For Shiny for Python:
+
+- `shiny` and `pytest` in an ancestor `.venv/bin` or Neovim's `PATH`
+- optionally `uv` and an ancestor `uv.lock` for first-run `uv sync`
+- optionally Linux `/proc` and `ss` to discover apps started outside Neovim
+
+For golem and Golex:
+
+- `Rscript`
+- the R packages `golem`, `pkgload`, `shiny`, and `testthat`
+- optionally [R.nvim](https://github.com/R-nvim/R.nvim) for
+  `document_and_reload()` and `run_dev()`
+
+Python users do not need R, R.nvim, or any R package.
 
 ## Installation
 
@@ -42,166 +48,218 @@ With lazy.nvim:
 ```lua
 {
   "ilyaZar/tapyr.nvim",
+  name = "shiny.nvim",
   dependencies = {
     "stevearc/overseer.nvim",
   },
+  opts = {},
 }
 ```
 
-For a local development checkout:
+For a local checkout:
 
 ```lua
 {
-  name = "tapyr.nvim",
-  dir = vim.fn.expand("~/path/to/tapyr.nvim"),
+  name = "shiny.nvim",
+  dir = vim.fn.expand("~/path/to/shiny.nvim"),
   dependencies = {
     "stevearc/overseer.nvim",
   },
 }
 ```
 
-Tapyr initializes automatically and requires no configuration call.
-
-## Usage
-
-Open a file below a Shiny `app.py`. Tapyr adds these buffer-local mappings:
-
-- `Ctrl+b` runs the app
-- `Ctrl+Shift+b` restarts the app task
-- `Ctrl+t` runs the test suite
-- `<leader>tm` opens the panel
-
-These are familiar IDE-style defaults. Change or disable any of them with
-`opts`:
+Shiny initializes automatically. Its defaults can be changed through `opts`:
 
 ```lua
 {
   "ilyaZar/tapyr.nvim",
+  name = "shiny.nvim",
   dependencies = {
     "stevearc/overseer.nvim",
   },
   opts = {
-    settings_path = vim.fn.stdpath("config") .. "/lua/plugins/tapyr.lua",
-    template_path_new_app = "https://github.com/Appsilon/tapyr-template.git",
+    settings_path = vim.fn.stdpath("config") .. "/lua/plugins/shiny.lua",
+    template_path_new_app =
+      "https://github.com/Appsilon/tapyr-template.git",
     mappings = {
       run = "<C-b>",
       restart = "<C-S-b>",
       test = "<C-t>",
       panel = "<leader>tm",
+      document_reload = "<C-g>",
+      run_dev = "<C-S-g>",
+    },
+    golex = {
+      dir = "/tmp/golskels",
+      shelves_path =
+        vim.fs.joinpath(vim.fn.stdpath("data"), "shiny", "golex.json"),
+      open_cmd = { "nvim" },
     },
   },
 }
 ```
 
-Set an individual mapping to `false` to disable it.
-Set `settings_path` to the readable Lua file containing these mappings to open
-it from the Settings view. Tapyr never creates or overwrites that file.
+Set an individual mapping to `false` to disable it. The two Golem mappings are
+attached only inside a detected golem package.
 
-`:Tapyr` opens the panel directly.
+`golex.open_cmd` is an argv array. `{ "nvim" }` uses `xdg-terminal-exec`,
+Ghostty, or Alacritty on Linux. GUI launchers such as `{ "code" }`,
+`{ "positron" }`, and `{ "rstudio" }` receive the selected project path
+directly. RStudio prefers an `.Rproj`, then `DESCRIPTION`, then
+`dev/01_start.R`.
 
-Inside the panel:
+To preserve another R.nvim companion's hook, chain Shiny through the R.nvim
+options table:
 
-- `Tab` and `Shift+Tab` cycle views
-- `j`, `k`, Down, and Up move between selectable rows
-- `Enter` opens app information or the selected Settings mapping
-- `R` starts or restarts the selected app
-- `X` stops the selected app
-- `b` opens the selected app in the default browser
-- `r` refreshes the app list
-- `N` creates an app from the configured template
-- `q` or `Esc` closes the panel
+```lua
+{
+  "R-nvim/R.nvim",
+  opts = function(_, opts)
+    require("shiny").setup_rnvim(opts)
+  end,
+}
+```
 
-Apps shows only runtime state: `running` or `stopped`. Enter opens the concise
-launch command, full project path, URL, and tracking details without changing
-the app. Settings shows the effective keys for Tapyr's four configurable
-actions. Help summarizes the effective panel keys and current app counts.
-Its repository, issue, pull request, and license rows open with `Enter`.
+The hook is optional because managed Golem lifecycle tasks use `Rscript`.
 
-Run `:checkhealth tapyr` to verify external dependencies.
+## Usage
 
-Tapyr runs applications and tests through Overseer. Overseer's native bottom
-dock is the recommended layout because it keeps task status and the selected
-task's live output together. Tapyr selects the relevant task without taking
-focus from the source buffer and respects explicit Overseer configuration.
+The canonical command is `:Shiny`:
 
-## Tracked apps
+- `:Shiny` opens the Apps tab
+- `:Shiny panel VIEW` opens `apps`, `golex`, `settings`, or `help`
+- `:Shiny golex` opens the native Golex tab
+- `:Shiny golex 7` creates `golex07`
+- `:Shiny golex my.app` creates `my.app`
+- `:Shiny golex next` creates the next numbered Golex app
+- `:Shiny action document-reload` sends `golem::document_and_reload()` through
+  R.nvim
+- `:Shiny action run-dev` sends `golem::run_dev()` through R.nvim
 
-Tapyr reads an optional global registry from
-`stdpath("config")/tapyr.json` and an optional `.tapyr.json` found above the
-current app. Both files use the same format:
+The `run-dev` action executes the project-owned development script. It is
+separate from the managed run and restart lifecycle.
+
+Detected project buffers receive:
+
+- `Ctrl+b` to run
+- `Ctrl+Shift+b` to restart
+- `Ctrl+t` to test
+- `<leader>tm` to open the panel
+- `Ctrl+g` to document and reload a Golem package through R.nvim
+- `Ctrl+Shift+g` to run a Golem dev script through R.nvim
+
+## Panel
+
+`Tab` and `Shift+Tab` cycle Apps, Golex, Settings, and Help. `j`, `k`, the arrow
+keys, `gg`, and `G` move between selectable rows. `q` or `Esc` closes the panel.
+
+Every tab uses the same bracketed footer syntax, but only its visible actions
+are active:
+
+- Apps: app details, restart, stop, browser, refresh, Python template, close
+- Golex: create/open, delete, shelves, next app, new Golex app, close
+- Settings: edit mapping, close
+- Help: open link, close
+
+Apps shows backend, state, assigned port, process details when available, launch
+command, and project. `Enter` opens backend-aware details.
+
+Settings shows the effective shared and Golem-specific mappings. Selecting a
+mapping opens `settings_path` when that readable file is configured. Shiny never
+creates or overwrites the settings file.
+
+## Golex
+
+The Golex tab keeps an editable row above the selectable projects. Press `N` or
+`i`, type an R package name or number, and press `Enter`. Numeric input is
+formatted with at least two digits.
+
+On a project row:
+
+- `Enter` opens the Open/Recreate dialog
+- `d` asks before recursively deleting that project
+
+Press `S` for shelves. Its editable row adds a shelf; `Enter` selects a shelf,
+and `d` asks before recursively deleting the selected shelf directory and every
+project below it. The configured default shelf cannot be deleted.
+
+Golex apps and shelves are intentionally disposable. Deletion removes their
+directories, not only their registry entries. Every destructive prompt names the
+complete recursive effect, and deletion is bounded to the selected canonical
+entry.
+
+Creation calls `golem::create_golem()` asynchronously. The destination is an
+`Rscript` argument and is never interpolated into R source.
+
+## Lifecycle
+
+Python runs:
+
+```text
+shiny run --reload --port PORT app.py
+```
+
+Python tests run `pytest`. If `shiny` is missing and an ancestor `uv.lock`
+exists, one shared `uv sync` task prepares that project before retrying.
+
+Golem runs a package loaded with `pkgload::load_all()`, then passes `run_app()`
+to `shiny::runApp()` with the assigned `SHINY_PORT`. This bypasses
+`dev/run_dev.R`, whose project-owned behavior may select another port or perform
+unrelated preparation. Golem tests run `testthat::test_local(".")`.
+
+Managed applications have one Overseer task per backend-qualified app ID.
+Overseer metadata is authoritative for their backend, port, and running state.
+Ports are assigned from 8000 through 8199 unless the registry reserves one.
+Shiny reports collisions and never stops an unrelated listener.
+
+Linux `ss` and `/proc` discovery supplements managed state for external Shiny
+for Python commands. It is not required for plugin-started applications.
+
+## Registries and overrides
+
+Shiny reads `stdpath("config")/shiny.json` and the nearest `.shiny.json`.
+Workspace entries appear first and replace matching global entries.
 
 ```json
 {
   "version": 1,
   "apps": [
     {
-      "name": "Admin",
-      "path": "apps/admin"
+      "name": "Python dashboard",
+      "path": "apps/dashboard",
+      "port": 8012
     },
     {
-      "name": "Reporting",
-      "path": "~/projects/reporting",
-      "port": 8012
+      "name": "Golem dashboard",
+      "path": "packages/dashboard",
+      "run": ["Rscript", "dev/run_dev.R"],
+      "test": ["Rscript", "tests/testthat.R"]
     }
   ]
 }
 ```
 
-Relative paths are resolved from the registry file. Each path must identify a
-directory containing a Shiny `app.py`. An app may reserve a fixed `port`.
-Workspace entries appear first and replace matching global entries. The current
-app and untracked Shiny processes remain visible without a registry.
+Paths may be absolute or relative to the registry. Shiny detects the backend
+from the target directory. `run` and `test` overrides must be non-empty argv
+arrays. Run overrides receive `SHINY_PORT`; they must honor it for accurate port
+tracking and browser URLs.
 
-## New apps
+## Health and development
 
-Press `N` in the panel and enter a destination to create an app from the
-configured template. The default is Appsilon's
-[Tapyr template](https://github.com/Appsilon/tapyr-template). Set
-`template_path_new_app` to another GitHub repository, `owner/repository`, or a
-local directory to use a different template.
+Run `:checkhealth shiny` for shared, Python, Golem, Golex, and optional R.nvim
+capabilities.
 
-Tapyr uses a shallow clone for GitHub repositories or copies a local template.
-It refuses an existing destination. Creating or opening an app does not install
-packages or prepare a Python environment.
-
-When an explicit run or restart cannot find `shiny`, Tapyr looks for an
-ancestor `uv.lock`. If `uv` is available, one `uv sync` Overseer task prepares
-the environment before Tapyr retries the requested action. Repeated requests
-share the same preparation task.
-
-## Project conventions
-
-Tapyr runs `shiny run --reload --port <port> app.py` and `pytest`. It searches
-the app and its parent directories for `.venv/bin`, then uses Neovim's `PATH`.
-Project detection expects an `app.py` that imports `shiny`.
-
-Configured ports are used as written. Otherwise, Tapyr assigns the first free
-port from 8000 through 8199 and keeps that assignment for the Neovim session.
-It reports collisions instead of stopping an unrelated process.
-
-The Apps view lists the public port for each local Shiny command and hides the
-internal redirect listener when the public port is known.
-
-Outside an explicit run or restart, Tapyr uses the prepared Python environment
-without changing its dependencies.
-
-## Development
-
-Run the headless tests:
+Run the headless suite:
 
 ```bash
 ./scripts/test
 ```
 
-Generate the LCOV report after installing `luacov` and `luacov-reporter-lcov`:
+Generate coverage:
 
 ```bash
 ./scripts/coverage
 ```
 
-The coverage script writes `coverage/lcov.info` and enforces at least 70% line
-coverage across the shipped Lua modules.
-
-## License
-
-MIT
+This unified implementation incorporates work from Tapyr.nvim and Rgolem.nvim.
+Both copyright notices are preserved in [LICENSE](LICENSE).
