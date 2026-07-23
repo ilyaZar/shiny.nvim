@@ -74,6 +74,8 @@ local function choose(parent, title, choices, callback, vertical, message)
   local message_lines = message and wrap(message, math.max(width - 2, 1)) or {}
   local message_height = #message_lines > 0 and #message_lines + 1 or 0
   local height = message_height + (vertical and #choices or 1)
+  local cursor
+  local win
 
   local function render(width)
     local lines = {}
@@ -129,10 +131,14 @@ local function choose(parent, title, choices, callback, vertical, message)
       end
       vim.api.nvim_buf_set_extmark(buf, namespace, offset[1], offset[2], options)
     end
+    cursor = { offsets[selected][1] + 1, offsets[selected][2] }
+    if win and vim.api.nvim_win_is_valid(win) then
+      vim.api.nvim_win_set_cursor(win, cursor)
+    end
   end
 
   render(width)
-  local win = vim.api.nvim_open_win(buf, true, {
+  win = vim.api.nvim_open_win(buf, true, {
     relative = "editor",
     width = width,
     height = height,
@@ -146,6 +152,7 @@ local function choose(parent, title, choices, callback, vertical, message)
     footer_pos = "center",
     zindex = 100,
   })
+  vim.api.nvim_win_set_cursor(win, cursor)
 
   local closed = false
   local function close(value)
