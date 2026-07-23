@@ -149,6 +149,15 @@ local first = assert(dialog_line:find("%S"))
 local last = assert(dialog_line:match(".*()%S"))
 local dialog_width = vim.api.nvim_win_get_width(0)
 assert(math.abs((first - 1) - (dialog_width - last)) <= 1, "dialog choices are not centered")
+local open_col = assert(dialog_line:find("[Open]", 1, true)) - 1
+assert(vim.api.nvim_win_get_cursor(0)[2] == open_col, "dialog cursor missed the selected choice")
+vim.api.nvim_feedkeys("l", "x", false)
+dialog_line = vim.api.nvim_get_current_line()
+local recreate_col = assert(dialog_line:find("[Recreate]", 1, true)) - 1
+assert(
+  vim.api.nvim_win_get_cursor(0)[2] == recreate_col,
+  "dialog cursor did not follow its selection"
+)
 local selected_warn
 for _, mark in ipairs(vim.api.nvim_buf_get_extmarks(0, -1, 0, -1, { details = true })) do
   if mark[4].hl_group == "DiagnosticWarn" then
@@ -415,6 +424,11 @@ assert(
   template_lines[2]:find("golem (golem::create_golem())", 1, true),
   "Apps chooser omitted the golem hook"
 )
+local tapyr_col = assert(template_lines[1]:find("[Tapyr", 1, true)) - 1
+assert(
+  vim.deep_equal(vim.api.nvim_win_get_cursor(0), { 1, tapyr_col }),
+  "vertical dialog cursor missed its selection"
+)
 for _, line in ipairs(template_lines) do
   assert(
     vim.fn.strdisplaywidth(line) <= vim.api.nvim_win_get_width(0),
@@ -429,10 +443,9 @@ for _, mark in ipairs(vim.api.nvim_buf_get_extmarks(0, -1, 0, -1, { details = tr
 end
 assert(tapyr_link, "Apps chooser did not expose the Tapyr repository link")
 vim.api.nvim_feedkeys("j", "x", false)
-assert(
-  vim.api.nvim_buf_get_lines(0, 1, 2, false)[1]:find("[golem (golem::create_golem())]", 1, true),
-  "Apps chooser did not move to golem"
-)
+local golem_line = vim.api.nvim_buf_get_lines(0, 1, 2, false)[1]
+local golem_col = assert(golem_line:find("[golem (golem::create_golem())]", 1, true)) - 1
+assert(vim.deep_equal(vim.api.nvim_win_get_cursor(0), { 2, golem_col }), "menu cursor did not move")
 local original_input = vim.ui.input
 vim.ui.input = function(_, callback)
   callback("/tmp/from-menu")
